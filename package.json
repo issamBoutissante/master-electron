@@ -10,7 +10,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
-    "watch": "nodemon electron-forge start"
+    "watch": "nodemon --watch * --exec \"electron .\""
   },
   "keywords": [],
   "author": {
