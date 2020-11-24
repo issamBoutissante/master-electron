@@ -1,4 +1,11 @@
-const { app, BrowserWindow, session, Menu, MenuItem } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  session,
+  Menu,
+  MenuItem,
+  ContextMenu,
+} = require("electron");
 const path = require("path");
 
 //dealing with menus
@@ -58,6 +65,9 @@ const createWindow = () => {
         console.log(progress);
       }
     });
+  });
+  mainWindow.webContents.on("context-menu", () => {
+    menu.popup();
   });
 };
 
