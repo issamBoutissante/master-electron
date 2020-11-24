@@ -1,24 +1,40 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, session, Menu, MenuItem } = require("electron");
 const path = require("path");
 
+//dealing with menus
+let menu = new Menu();
+let menuItem = new MenuItem({
+  label: "Menu",
+  submenu: [
+    { label: "new" },
+    { label: "open" },
+    { label: "save" },
+    { label: "save as" },
+    {
+      label: "close",
+      submenu: [{ label: "close all" }, { label: "close the opened window" }],
+    },
+  ],
+});
+menu.append(menuItem);
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
 let mainWindow;
 let messageWindow;
+
 const createWindow = () => {
+  Menu.setApplicationMenu(menu);
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    titleBarStyle: "hidden",
   });
   messageWindow = new BrowserWindow({
     width: 300,
     height: 200,
     parent: mainWindow,
     show: false,
-    frame: false,
   });
   mainWindow.loadFile(path.join(__dirname, "index.html"));
   messageWindow.loadFile(path.join(__dirname, "./simpleMessage.html"));
@@ -30,11 +46,18 @@ const createWindow = () => {
   messageWindow.on("closed", (e) => {
     messageWindow = null;
   });
-  app.on("browser-window-focus", (event, window) => {
-    if (mainWindow) messageWindow.show();
-  });
-  app.on("browser-window-blur", (event, window) => {
-    if (mainWindow) messageWindow.hide();
+  let ses = session.defaultSession;
+  ses.on("will-download", (e, item, webcontent) => {
+    let size = item.getTotalBytes();
+    item.on("done", () => {});
+    item.on("updated", (e, state) => {
+      let receivedSize = item.getReceivedBytes();
+      if (state === "progressing" && receivedSize) {
+        let progress = Math.round((receivedSize / size) * 100);
+        webcontent.executeJavaScript(`window.progress.value=${progress}`);
+        console.log(progress);
+      }
+    });
   });
 };
 
